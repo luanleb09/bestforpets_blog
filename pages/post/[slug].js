@@ -11,10 +11,10 @@ export default function PostDetail() {
   useEffect(() => {
     if (!slug) return
     const apiBase = process.env.NEXT_PUBLIC_WP_API
+    // 🔑 Public API: dùng ?slug= để lấy bài viết
     axios
-      .get(`${apiBase}/posts/slug:${slug}`)
+      .get(`${apiBase}/posts?slug=${slug}`)
       .then(res => {
-        // API trả về {found, posts: []}
         if (res.data?.posts?.length) setPost(res.data.posts[0])
       })
       .catch(err => console.error('Error fetching post detail:', err))
@@ -26,11 +26,18 @@ export default function PostDetail() {
     <>
       <Head>
         <title>{post.title}</title>
-        <meta name="description" content={post.excerpt?.replace(/<[^>]+>/g, '')} />
+        <meta
+          name="description"
+          content={post.excerpt?.replace(/<[^>]+>/g, '') || ''}
+        />
       </Head>
+
       <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
         <h1>{post.title}</h1>
-        <div dangerouslySetInnerHTML={{ __html: post.content }} />
+        <div
+          dangerouslySetInnerHTML={{ __html: post.content }}
+          style={{ marginTop: '20px' }}
+        />
       </div>
     </>
   )
