@@ -5,37 +5,26 @@ import Head from 'next/head'
 
 export default function PostDetail() {
   const router = useRouter()
-  const { slug, id } = router.query   // slug và id được truyền từ URL
+  const { slug } = router.query
   const [post, setPost] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (!slug && !id) return
-    const apiBase = process.env.NEXT_PUBLIC_WP_API   // 👉 Public API bạn đã khai báo
+    if (!slug) return
+    const apiBase = process.env.NEXT_PUBLIC_WP_API
 
-    async function fetchPost() {
-      try {
-        let res
-        if (id) {
-          // ✅ Trường hợp có ID → gọi trực tiếp
-          res = await axios.get(`${apiBase}/posts/${id}`)
-        } else if (slug) {
-          // ✅ Trường hợp chỉ có slug → dùng endpoint slug
-          res = await axios.get(`${apiBase}/posts/slug:${slug}`)
-        }
-        if (res?.data) setPost(res.data)
-      } catch (err) {
-        console.error('❌ Error fetching post detail:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
+    // ✅ Gọi API theo slug
+    axios
+      .get(`${apiBase}/posts/slug:${slug}`)
+      .then(res => setPost(res.data))
+      .catch(err => {
+        console.error('❌ Lỗi API:', err)
+        setError('Không tìm thấy bài viết')
+      })
+  }, [slug])
 
-    fetchPost()
-  }, [slug, id])
-
-  if (loading) return <p style={{ padding: 20 }}>Đang tải bài viết...</p>
-  if (!post) return <p style={{ padding: 20 }}>❌ Không tìm thấy bài viết</p>
+  if (error) return <p style={{ padding: 20 }}>{error}</p>
+  if (!post) return <p style={{ padding: 20 }}>Đang tải bài viết...</p>
 
   return (
     <>

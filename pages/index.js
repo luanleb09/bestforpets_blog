@@ -64,12 +64,11 @@ export default function Home() {
                   👉 URL là slug để SEO,
                   nhưng truyền thêm id để trang chi tiết load nhanh.
                 */}
-                <Link
-                  href={`/posts/${post.slug}?id=${post.ID}`}
-                  style={{ textDecoration: 'none', color: '#333' }}
-                >
-                  {post.title}
-                </Link>
+                <li key={post.ID}>
+					<Link href={`/posts/${post.slug}`}>
+					  <a>{post.title}</a>
+					</Link>
+				  </li>
               </h3>
 
               {post.featured_image && (
