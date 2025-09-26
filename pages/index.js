@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Head from 'next/head'
 
 export default function Home() {
-  const [siteTitle, setSiteTitle] = useState('Best For Pets')
+  const [siteTitle, setSiteTitle] = useState('My Blog')
   const [posts, setPosts] = useState([])
 
   useEffect(() => {
@@ -14,18 +14,21 @@ export default function Home() {
       return
     }
 
-    // 1️⃣ Lấy thông tin site
+    // 1️⃣ Lấy tên site
     axios
-      .get(apiBase)
+      .get(apiBase.replace('/rest/v1.1/sites/', '/rest/v1.1/site/')) // lấy info site (nếu được)
       .then(res => {
-        if (res.data?.name) setSiteTitle(res.data.name)
+        if (res.data && res.data.name) setSiteTitle(res.data.name)
       })
-      .catch(err => console.error('Error fetching site info:', err))
+      .catch(() => {}) // có thể bỏ qua nếu không cần
 
     // 2️⃣ Lấy danh sách bài viết
     axios
-      .get(`${apiBase}/posts?number=20`)
-      .then(res => setPosts(Array.isArray(res.data.posts) ? res.data.posts : []))
+      .get(`${apiBase}/posts?number=20&fields=ID,slug,title,excerpt,date,featured_image`)
+      .then(res => {
+        const list = Array.isArray(res.data.posts) ? res.data.posts : []
+        setPosts(list)
+      })
       .catch(err => console.error('Error fetching posts:', err))
   }, [])
 
@@ -57,8 +60,12 @@ export default function Home() {
               }}
             >
               <h3 style={{ marginTop: 0 }}>
+                {/* 
+                  👉 URL là slug để SEO,
+                  nhưng truyền thêm id để trang chi tiết load nhanh.
+                */}
                 <Link
-                  href={`/posts/${post.slug}`}
+                  href={`/posts/${post.slug}?id=${post.ID}`}
                   style={{ textDecoration: 'none', color: '#333' }}
                 >
                   {post.title}
