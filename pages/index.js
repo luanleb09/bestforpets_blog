@@ -8,21 +8,28 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_WP_API; // ví dụ: https://public-api.wordpress.com/wp/v2/sites/your-site.wordpress.com
+    const apiBase = process.env.NEXT_PUBLIC_WP_API;
+    if (!apiBase) {
+      console.error('⚠️ NEXT_PUBLIC_WP_API chưa được cấu hình trong .env.local');
+      return;
+    }
 
-    // 1️⃣ Lấy thông tin site (để hiển thị tên web)
+    // 1️⃣ Lấy thông tin site
     axios
-      .get(`${process.env.NEXT_PUBLIC_WP_API}/posts/?number=20`)
-      .then(res => setPosts(res.data.posts || []))
-	  .catch(err => {
-        if (res.data.name) setSiteTitle(res.data.name);
+      .get(`${apiBase}`)
+      .then(res => {
+        if (res.data && res.data.name) setSiteTitle(res.data.name);
       })
       .catch(err => console.error('Error fetching site info:', err));
 
-    // 2️⃣ Lấy danh sách bài viết (kèm ảnh đại diện)
+    // 2️⃣ Lấy danh sách bài viết (Jetpack)
+    // Jetpack trả về { posts: [ ... ] }
     axios
-      .get(`${apiBase}/posts?_embed&per_page=20`)
-      .then(res => setPosts(res.data))
+      .get(`${apiBase}/posts/?number=20&fields=ID,title,excerpt,date,featured_image`)
+      .then(res => {
+        const data = Array.isArray(res.data.posts) ? res.data.posts : [];
+        setPosts(data);
+      })
       .catch(err => console.error('Error fetching posts:', err));
   }, []);
 
@@ -30,7 +37,10 @@ export default function Home() {
     <>
       <Head>
         <title>{siteTitle}</title>
-        <meta name="description" content="Next.js blog powered by WordPress REST API" />
+        <meta
+          name="description"
+          content={`Next.js blog powered by WordPress.com Jetpack API`}
+        />
       </Head>
 
       <div style={{ padding: '20px' }}>
@@ -43,13 +53,10 @@ export default function Home() {
             gap: '20px'
           }}
         >
-          {posts.map(post => {
-            const featuredImg =
-              post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null;
-
-            return (
+          {Array.isArray(posts) &&
+            posts.map(post => (
               <div
-                key={post.id}
+                key={post.ID}
                 style={{
                   border: '1px solid #ccc',
                   borderRadius: '8px',
@@ -58,29 +65,39 @@ export default function Home() {
                 }}
               >
                 <h3 style={{ marginTop: 0 }}>
-                  <Link href={`/post/${post.id}`} style={{ textDecoration: 'none', color: '#333' }}>
-                    {post.title.rendered}
+                  <Link
+                    href={`/post/${post.ID}`}
+                    style={{ textDecoration: 'none', color: '#333' }}
+                  >
+                    {post.title}
                   </Link>
                 </h3>
 
-                {featuredImg && (
+                {post.featured_image && (
                   <img
-                    src={featuredImg}
-                    alt={post.title.rendered}
-                    style={{ width: '100%', borderRadius: '6px', marginBottom: '12px' }}
+                    src={post.featured_image}
+                    alt={post.title}
+                    style={{
+                      width: '100%',
+                      borderRadius: '6px',
+                      marginBottom: '12px'
+                    }}
                   />
                 )}
 
                 <div
-                  style={{ fontSize: '0.9rem', color: '#666', marginBottom: '8px' }}
-                  dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
+                  style={{
+                    fontSize: '0.9rem',
+                    color: '#666',
+                    marginBottom: '8px'
+                  }}
+                  dangerouslySetInnerHTML={{ __html: post.excerpt }}
                 />
                 <small style={{ color: '#999' }}>
                   📅 {new Date(post.date).toLocaleDateString()}
                 </small>
               </div>
-            );
-          })}
+            ))}
         </div>
       </div>
     </>
