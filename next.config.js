@@ -1,6 +1,1 @@
-module.exports = {
-  reactStrictMode: true,
-  images: {
-    domains: ['your-wp-site.com'],
-  },
-};
+module.exports = { reactStrictMode: true };

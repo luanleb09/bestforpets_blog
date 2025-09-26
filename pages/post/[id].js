@@ -10,7 +10,8 @@ export default function PostDetail() {
 
   useEffect(() => {
     if (id) {
-      axios.get(`${process.env.NEXT_PUBLIC_WORDPRESS_API_URL}/posts/${id}?_embed`)
+      axios
+        .get(`${process.env.NEXT_PUBLIC_WP_API}/posts/${id}/?fields=ID,title,content,excerpt,date,categories,tags,featured_image`)
         .then(res => setPost(res.data))
         .catch(err => console.error(err));
     }
@@ -21,12 +22,15 @@ export default function PostDetail() {
   return (
     <>
       <Head>
-        <title>{post.title.rendered}</title>
-        <meta name="description" content={post.excerpt.rendered.replace(/<[^>]+>/g, '')} />
+        <title>{post.title}</title>
+        <meta name="description" content={post.excerpt.replace(/<[^>]+>/g, '')} />
       </Head>
       <article>
-        <h1>{post.title.rendered}</h1>
-        <div dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
+        <h1>{post.title}</h1>
+        {post.featured_image && (
+          <img src={post.featured_image} alt={post.title} style={{ width: '100%', borderRadius: '8px' }} />
+        )}
+        <div dangerouslySetInnerHTML={{ __html: post.content }} />
       </article>
     </>
   );
