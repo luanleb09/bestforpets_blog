@@ -12,8 +12,9 @@ export default function Home() {
 
     // 1️⃣ Lấy thông tin site (để hiển thị tên web)
     axios
-      .get(`${apiBase.replace('/wp/v2', '')}`)
-      .then(res => {
+      .get(`${process.env.NEXT_PUBLIC_WP_API}/posts/?number=20`)
+      .then(res => setPosts(res.data.posts || []))
+	  .catch(err => {
         if (res.data.name) setSiteTitle(res.data.name);
       })
       .catch(err => console.error('Error fetching site info:', err));
