@@ -4,37 +4,82 @@ import Link from 'next/link';
 import Head from 'next/head';
 
 export default function Home() {
+  const [siteTitle, setSiteTitle] = useState('My Blog');
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
+    const apiBase = process.env.NEXT_PUBLIC_WP_API; // ví dụ: https://public-api.wordpress.com/wp/v2/sites/your-site.wordpress.com
+
+    // 1️⃣ Lấy thông tin site (để hiển thị tên web)
     axios
-      .get(`${process.env.NEXT_PUBLIC_WP_API}/posts/?number=20&fields=ID,title,excerpt,date,featured_image`)
-      .then(res => setPosts(res.data.posts))
-      .catch(err => console.error(err));
+      .get(`${apiBase.replace('/wp/v2', '')}`)
+      .then(res => {
+        if (res.data.name) setSiteTitle(res.data.name);
+      })
+      .catch(err => console.error('Error fetching site info:', err));
+
+    // 2️⃣ Lấy danh sách bài viết (kèm ảnh đại diện)
+    axios
+      .get(`${apiBase}/posts?_embed&per_page=20`)
+      .then(res => setPosts(res.data))
+      .catch(err => console.error('Error fetching posts:', err));
   }, []);
 
   return (
     <>
       <Head>
-        <title>My WP Blog</title>
-        <meta name="description" content="Next.js blog powered by WordPress.com Jetpack API" />
+        <title>{siteTitle}</title>
+        <meta name="description" content="Next.js blog powered by WordPress REST API" />
       </Head>
-      <div>
-        <h1>My Blog</h1>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-          {posts.map(post => (
-            <div key={post.ID}>
-              <h3>
-                <Link href={`/post/${post.ID}`}>
-                  {post.title}
-                </Link>
-              </h3>
-              {post.featured_image && (
-                <img src={post.featured_image} alt={post.title} style={{ width: '100%', borderRadius: '8px' }} />
-              )}
-              <div dangerouslySetInnerHTML={{ __html: post.excerpt }} />
-            </div>
-          ))}
+
+      <div style={{ padding: '20px' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '40px' }}>{siteTitle}</h1>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: '20px'
+          }}
+        >
+          {posts.map(post => {
+            const featuredImg =
+              post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null;
+
+            return (
+              <div
+                key={post.id}
+                style={{
+                  border: '1px solid #ccc',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  background: '#fff'
+                }}
+              >
+                <h3 style={{ marginTop: 0 }}>
+                  <Link href={`/post/${post.id}`} style={{ textDecoration: 'none', color: '#333' }}>
+                    {post.title.rendered}
+                  </Link>
+                </h3>
+
+                {featuredImg && (
+                  <img
+                    src={featuredImg}
+                    alt={post.title.rendered}
+                    style={{ width: '100%', borderRadius: '6px', marginBottom: '12px' }}
+                  />
+                )}
+
+                <div
+                  style={{ fontSize: '0.9rem', color: '#666', marginBottom: '8px' }}
+                  dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
+                />
+                <small style={{ color: '#999' }}>
+                  📅 {new Date(post.date).toLocaleDateString()}
+                </small>
+              </div>
+            );
+          })}
         </div>
       </div>
     </>
