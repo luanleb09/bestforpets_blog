@@ -12,13 +12,24 @@ export default function PostDetail() {
   useEffect(() => {
     if (!slug) return
     const apiBase = process.env.NEXT_PUBLIC_WP_API
+    if (!apiBase) {
+      console.error('⚠️ NEXT_PUBLIC_WP_API chưa được cấu hình')
+      return
+    }
 
     // ✅ Gọi API theo slug
     axios
       .get(`${apiBase}/posts/slug:${slug}`)
-      .then(res => setPost(res.data))
+      .then(res => {
+        // Public API trả về object bài viết trực tiếp
+        if (res.data && res.data.ID) {
+          setPost(res.data)
+        } else {
+          setError('Không tìm thấy bài viết')
+        }
+      })
       .catch(err => {
-        console.error('❌ Lỗi API:', err)
+        console.error('Error fetching post by slug:', err)
         setError('Không tìm thấy bài viết')
       })
   }, [slug])

@@ -14,20 +14,19 @@ export default function Home() {
       return
     }
 
-    // 1️⃣ Lấy tên site
+    // ✅ Lấy thông tin site (để hiển thị tên blog)
     axios
-      .get(apiBase) // lấy info site (nếu được)
+      .get(apiBase) // VD: https://public-api.wordpress.com/rest/v1.1/sites/xxxxx.wordpress.com
       .then(res => {
         if (res.data && res.data.name) setSiteTitle(res.data.name)
       })
-      .catch(() => {}) // có thể bỏ qua nếu không cần
+      .catch(err => console.error('Error fetching site info:', err))
 
-    // 2️⃣ Lấy danh sách bài viết
+    // ✅ Lấy danh sách bài viết
     axios
-      .get(`${apiBase}/posts?number=20&fields=ID,slug,title,excerpt,date,featured_image`)
+      .get(`${apiBase}/posts/?number=20`) // Public API: posts/?number=20
       .then(res => {
-        const list = Array.isArray(res.data.posts) ? res.data.posts : []
-        setPosts(list)
+        setPosts(Array.isArray(res.data.posts) ? res.data.posts : [])
       })
       .catch(err => console.error('Error fetching posts:', err))
   }, [])
@@ -36,7 +35,7 @@ export default function Home() {
     <>
       <Head>
         <title>{siteTitle}</title>
-        <meta name="description" content="Next.js blog powered by WordPress.com Public API" />
+        <meta name="description" content="Next.js blog powered by WordPress REST API" />
       </Head>
 
       <div style={{ padding: '20px' }}>
@@ -49,49 +48,49 @@ export default function Home() {
             gap: '20px'
           }}
         >
-          {posts.map(post => (
-            <div
-              key={post.ID}
-              style={{
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                padding: '16px',
-                background: '#fff'
-              }}
-            >
-              <h3 style={{ marginTop: 0 }}>
-                {/* 
-                  👉 URL là slug để SEO,
-                  nhưng truyền thêm id để trang chi tiết load nhanh.
-                */}
-                <li key={post.ID}>
-					<Link href={`/posts/${post.slug}`}>
-					  <a>{post.title}</a>
-					</Link>
-				  </li>
-              </h3>
-
-              {post.featured_image && (
-                <img
-                  src={post.featured_image}
-                  alt={post.title}
-                  style={{
-                    width: '100%',
-                    borderRadius: '6px',
-                    marginBottom: '12px'
-                  }}
-                />
-              )}
-
+          {posts.map(post => {
+            const featuredImg = post.featured_image || null
+            return (
               <div
-                style={{ fontSize: '0.9rem', color: '#666', marginBottom: '8px' }}
-                dangerouslySetInnerHTML={{ __html: post.excerpt }}
-              />
-              <small style={{ color: '#999' }}>
-                📅 {new Date(post.date).toLocaleDateString()}
-              </small>
-            </div>
-          ))}
+                key={post.ID}
+                style={{
+                  border: '1px solid #ccc',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  background: '#fff'
+                }}
+              >
+                <h3 style={{ marginTop: 0 }}>
+                  <Link
+                    href={`/posts/${post.slug}`}
+                    style={{ textDecoration: 'none', color: '#333' }}
+                  >
+                    {post.title}
+                  </Link>
+                </h3>
+
+                {featuredImg && (
+                  <img
+                    src={featuredImg}
+                    alt={post.title}
+                    style={{
+                      width: '100%',
+                      borderRadius: '6px',
+                      marginBottom: '12px'
+                    }}
+                  />
+                )}
+
+                <div
+                  style={{ fontSize: '0.9rem', color: '#666', marginBottom: '8px' }}
+                  dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                />
+                <small style={{ color: '#999' }}>
+                  📅 {new Date(post.date).toLocaleDateString()}
+                </small>
+              </div>
+            )
+          })}
         </div>
       </div>
     </>
