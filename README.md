@@ -1,8 +1,8 @@
 # Next.js Jetpack Blog
 
-Blog demo fetch từ Jetpack API (WordPress.com Free Plan).
+Blog demo fetch from Jetpack API (WordPress.com Free Plan).
 
-## Cách chạy local
+## Run local
 
 ```bash
 npm install
