@@ -5,32 +5,37 @@ import Head from 'next/head'
 
 export default function PostDetail() {
   const router = useRouter()
-  const { slug, id } = router.query   // ✅ nhận cả slug và id
+  const { slug, id } = router.query   // slug và id được truyền từ URL
   const [post, setPost] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!slug) return
-    const apiBase = process.env.NEXT_PUBLIC_WP_API
+    if (!slug && !id) return
+    const apiBase = process.env.NEXT_PUBLIC_WP_API   // 👉 Public API bạn đã khai báo
 
-    if (id) {
-      // ✅ Trường hợp có ID → gọi thẳng, nhanh nhất
-      axios
-        .get(`${apiBase}/posts/${id}`)
-        .then(res => setPost(res.data))
-        .catch(err => console.error('Error fetching post by ID:', err))
-    } else {
-      // ❗ Không có ID → gọi danh sách rồi tìm slug (chậm hơn)
-      axios
-        .get(`${apiBase}/posts?number=50`)
-        .then(res => {
-          const match = res.data.posts.find(p => p.slug === slug)
-          if (match) setPost(match)
-        })
-        .catch(err => console.error('Error fetching posts list:', err))
+    async function fetchPost() {
+      try {
+        let res
+        if (id) {
+          // ✅ Trường hợp có ID → gọi trực tiếp
+          res = await axios.get(`${apiBase}/posts/${id}`)
+        } else if (slug) {
+          // ✅ Trường hợp chỉ có slug → dùng endpoint slug
+          res = await axios.get(`${apiBase}/posts/slug:${slug}`)
+        }
+        if (res?.data) setPost(res.data)
+      } catch (err) {
+        console.error('❌ Error fetching post detail:', err)
+      } finally {
+        setLoading(false)
+      }
     }
+
+    fetchPost()
   }, [slug, id])
 
-  if (!post) return <p style={{ padding: 20 }}>Đang tải bài viết...</p>
+  if (loading) return <p style={{ padding: 20 }}>Đang tải bài viết...</p>
+  if (!post) return <p style={{ padding: 20 }}>❌ Không tìm thấy bài viết</p>
 
   return (
     <>
