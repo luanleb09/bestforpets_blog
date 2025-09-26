@@ -56,7 +56,7 @@ export default function Home() {
           {Array.isArray(posts) &&
             posts.map(post => (
               <div
-                key={post.ID}
+                key={post.id}
                 style={{
                   border: '1px solid #ccc',
                   borderRadius: '8px',
@@ -66,7 +66,7 @@ export default function Home() {
               >
                 <h3 style={{ marginTop: 0 }}>
                   <Link
-                    href={`/post/${post.ID}`}
+                    href={`/post/${post.slug}`}
                     style={{ textDecoration: 'none', color: '#333' }}
                   >
                     {post.title}
