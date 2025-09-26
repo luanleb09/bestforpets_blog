@@ -16,7 +16,7 @@ export default function Home() {
 
     // 1️⃣ Lấy tên site
     axios
-      .get(apiBase.replace('/rest/v1.1/sites/', '/rest/v1.1/site/')) // lấy info site (nếu được)
+      .get(apiBase) // lấy info site (nếu được)
       .then(res => {
         if (res.data && res.data.name) setSiteTitle(res.data.name)
       })
