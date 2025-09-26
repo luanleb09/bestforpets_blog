@@ -40,12 +40,3 @@ export default function Home() {
     </>
   );
 }
-useEffect(() => {
-  axios
-    .get(`${process.env.NEXT_PUBLIC_WP_API}/posts/?number=20&fields=ID,title,excerpt,date,featured_image`)
-    .then(res => {
-      console.log('API data:', res.data); // <== thêm dòng này để debug
-      setPosts(res.data.posts);
-    })
-    .catch(err => console.error('API error:', err));
-}, []);
