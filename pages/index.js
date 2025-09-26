@@ -1,46 +1,39 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import Link from 'next/link';
-import Head from 'next/head';
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+import Link from 'next/link'
+import Head from 'next/head'
 
 export default function Home() {
-  const [siteTitle, setSiteTitle] = useState('My Blog');
-  const [posts, setPosts] = useState([]);
+  const [siteTitle, setSiteTitle] = useState('My Blog')
+  const [posts, setPosts] = useState([])
 
   useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_WP_API;
+    const apiBase = process.env.NEXT_PUBLIC_WP_API
     if (!apiBase) {
-      console.error('⚠️ NEXT_PUBLIC_WP_API chưa được cấu hình trong .env.local');
-      return;
+      console.error('⚠️ Chưa cấu hình NEXT_PUBLIC_WP_API trong .env.local')
+      return
     }
 
-    // 1️⃣ Lấy thông tin site
+    // 1️⃣ Lấy thông tin site (nếu dùng WP.com có thể không cần)
     axios
-      .get(`${apiBase}`)
+      .get(`${process.env.NEXT_PUBLIC_WP_API.replace('/wp/v2','')}`) // Bỏ /wp/v2 để lấy info site
       .then(res => {
-        if (res.data && res.data.name) setSiteTitle(res.data.name);
+        if (res.data && res.data.name) setSiteTitle(res.data.name)
       })
-      .catch(err => console.error('Error fetching site info:', err));
+      .catch(() => {}) // Không bắt buộc
 
-    // 2️⃣ Lấy danh sách bài viết (Jetpack)
-    // Jetpack trả về { posts: [ ... ] }
+    // 2️⃣ Lấy danh sách bài viết
     axios
-      .get(`${apiBase}/posts/?number=20&fields=ID,title,excerpt,date,featured_image`)
-      .then(res => {
-        const data = Array.isArray(res.data.posts) ? res.data.posts : [];
-        setPosts(data);
-      })
-      .catch(err => console.error('Error fetching posts:', err));
-  }, []);
+      .get(`${process.env.NEXT_PUBLIC_WP_API}/posts?_embed&per_page=20`)
+      .then(res => setPosts(Array.isArray(res.data) ? res.data : []))
+      .catch(err => console.error('Error fetching posts:', err))
+  }, [])
 
   return (
     <>
       <Head>
         <title>{siteTitle}</title>
-        <meta
-          name="description"
-          content={`Next.js blog powered by WordPress.com Jetpack API`}
-        />
+        <meta name="description" content="Next.js blog powered by WordPress REST API" />
       </Head>
 
       <div style={{ padding: '20px' }}>
@@ -53,8 +46,10 @@ export default function Home() {
             gap: '20px'
           }}
         >
-          {Array.isArray(posts) &&
-            posts.map(post => (
+          {posts.map(post => {
+            const featuredImg =
+              post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null
+            return (
               <div
                 key={post.id}
                 style={{
@@ -65,18 +60,15 @@ export default function Home() {
                 }}
               >
                 <h3 style={{ marginTop: 0 }}>
-                  <Link
-                    href={`/post/${post.slug}`}
-                    style={{ textDecoration: 'none', color: '#333' }}
-                  >
-                    {post.title}
+                  <Link href={`/posts/${post.slug}`} style={{ textDecoration: 'none', color: '#333' }}>
+                    {post.title.rendered}
                   </Link>
                 </h3>
 
-                {post.featured_image && (
+                {featuredImg && (
                   <img
-                    src={post.featured_image}
-                    alt={post.title}
+                    src={featuredImg}
+                    alt={post.title.rendered}
                     style={{
                       width: '100%',
                       borderRadius: '6px',
@@ -86,20 +78,17 @@ export default function Home() {
                 )}
 
                 <div
-                  style={{
-                    fontSize: '0.9rem',
-                    color: '#666',
-                    marginBottom: '8px'
-                  }}
-                  dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                  style={{ fontSize: '0.9rem', color: '#666', marginBottom: '8px' }}
+                  dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
                 />
                 <small style={{ color: '#999' }}>
                   📅 {new Date(post.date).toLocaleDateString()}
                 </small>
               </div>
-            ))}
+            )
+          })}
         </div>
       </div>
     </>
-  );
+  )
 }

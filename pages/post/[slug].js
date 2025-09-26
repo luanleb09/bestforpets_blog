@@ -12,12 +12,11 @@ export default function PostDetail() {
     if (!slug) return
     const apiBase = process.env.NEXT_PUBLIC_WP_API
 
-    // Fetch bài viết theo slug
     axios
-      .get(`${apiBase}/posts?slug=${slug}&_embed`)
+      .get(`${process.env.NEXT_PUBLIC_WP_API}/posts?slug=${slug}&_embed`)
       .then(res => {
-        if (res.data && res.data.length > 0) {
-          setPost(res.data[0]) // slug luôn trả về array
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setPost(res.data[0])
         }
       })
       .catch(err => console.error('Error fetching post detail:', err))
@@ -32,7 +31,10 @@ export default function PostDetail() {
     <>
       <Head>
         <title>{post.title.rendered}</title>
-        <meta name="description" content={post.excerpt.rendered.replace(/<[^>]+>/g, '')} />
+        <meta
+          name="description"
+          content={post.excerpt.rendered.replace(/<[^>]+>/g, '')}
+        />
       </Head>
 
       <article style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
