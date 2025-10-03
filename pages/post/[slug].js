@@ -14,23 +14,39 @@ export default function Post() {
   useEffect(() => {
     if (!slug) return;
 
+    // Reset state khi slug thay đổi
+    setIsLoading(true);
+    setIsError(false);
+    setPost(null);
+
     const fetchPost = async () => {
       try {
-        // FIX: Đổi từ /posts/slug:${slug} thành /posts?slug=${slug}
         const apiUrl = `${BASE_URL}/posts?slug=${slug}`;
+        
+        console.log('🔍 Fetching URL:', apiUrl);
+        console.log('📌 Slug từ URL:', slug);
         
         const res = await fetch(apiUrl);
         const data = await res.json();
         
-        // Jetpack API trả về array, lấy phần tử đầu tiên
+        console.log('📦 Full API Response:', data);
+        console.log('📝 Number of posts returned:', data.posts?.length);
+        
         if (data.posts && data.posts.length > 0) {
+          console.log('✅ Post found:');
+          console.log('  - ID:', data.posts[0].ID);
+          console.log('  - Title:', data.posts[0].title);
+          console.log('  - Slug:', data.posts[0].slug);
+          console.log('  - Does slug match?', data.posts[0].slug === slug);
+          
           setPost(data.posts[0]);
         } else {
+          console.error('❌ No posts found in response');
           setIsError(true);
         }
       } catch (e) {
         setIsError(true);
-        console.error("Lỗi khi fetch API:", e);
+        console.error("❌ Lỗi khi fetch API:", e);
       } finally {
         setIsLoading(false);
       }
