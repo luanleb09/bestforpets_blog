@@ -27,7 +27,7 @@ export default function PostDetail() {
       })
 
     // Lấy bài viết theo slug
-    axios.get(`${apiBase}/posts/slug:${slug}`)
+    axios.get(`${apiBase}/post/slug:${slug}`)
       .then(res => {
         if (res.data?.posts?.[0]) setPost(res.data.posts[0])
         setLoading(false)
