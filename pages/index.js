@@ -9,14 +9,17 @@ export default function Home() {
 
   useEffect(() => {
     const apiBase = process.env.NEXT_PUBLIC_WP_API
+    
     if (!apiBase) {
       console.error('⚠️ Chưa cấu hình NEXT_PUBLIC_WP_API trong .env.local')
       return
     }
 
-    // ✅ Lấy thông tin site (để hiển thị tên blog)
+    console.log('🔍 API Base:', apiBase) // Debug log
+
+    // ✅ Lấy thông tin site
     axios
-      .get(apiBase) // VD: https://public-api.wordpress.com/rest/v1.1/sites/xxxxx.wordpress.com
+      .get(apiBase)
       .then(res => {
         if (res.data && res.data.name) setSiteTitle(res.data.name)
       })
@@ -24,9 +27,17 @@ export default function Home() {
 
     // ✅ Lấy danh sách bài viết
     axios
-      .get(`${apiBase}/posts/?number=20`) // Public API: posts/?number=20
+      .get(`${apiBase}/posts/?number=20`)
       .then(res => {
-        setPosts(Array.isArray(res.data.posts) ? res.data.posts : [])
+        const postList = Array.isArray(res.data.posts) ? res.data.posts : []
+        
+        // 🐛 DEBUG: In ra slug của từng bài viết
+        console.log('📝 Danh sách bài viết:')
+        postList.forEach((post, index) => {
+          console.log(`${index + 1}. ID: ${post.ID} | Slug: "${post.slug}" | Title: ${post.title}`)
+        })
+        
+        setPosts(postList)
       })
       .catch(err => console.error('Error fetching posts:', err))
   }, [])
@@ -40,6 +51,18 @@ export default function Home() {
 
       <div style={{ padding: '20px' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '40px' }}>{siteTitle}</h1>
+        
+        {/* Debug info */}
+        <div style={{ 
+          background: '#f0f0f0', 
+          padding: '10px', 
+          marginBottom: '20px',
+          borderRadius: '4px',
+          fontSize: '14px'
+        }}>
+          <strong>Debug Info:</strong> Tìm thấy {posts.length} bài viết. 
+          Mở Console (F12) để xem slug của từng bài.
+        </div>
 
         <div
           style={{
@@ -50,6 +73,7 @@ export default function Home() {
         >
           {posts.map(post => {
             const featuredImg = post.featured_image || null
+            
             return (
               <div
                 key={post.ID}
@@ -68,6 +92,19 @@ export default function Home() {
                     {post.title}
                   </Link>
                 </h3>
+                
+                {/* Hiển thị slug để debug */}
+                <div style={{ 
+                  fontSize: '12px', 
+                  color: '#999', 
+                  marginBottom: '8px',
+                  fontFamily: 'monospace',
+                  background: '#f9f9f9',
+                  padding: '4px 8px',
+                  borderRadius: '3px'
+                }}>
+                  Slug: {post.slug}
+                </div>
 
                 {featuredImg && (
                   <img
@@ -80,11 +117,12 @@ export default function Home() {
                     }}
                   />
                 )}
-
+                
                 <div
                   style={{ fontSize: '0.9rem', color: '#666', marginBottom: '8px' }}
                   dangerouslySetInnerHTML={{ __html: post.excerpt }}
                 />
+                
                 <small style={{ color: '#999' }}>
                   📅 {new Date(post.date).toLocaleDateString()}
                 </small>
