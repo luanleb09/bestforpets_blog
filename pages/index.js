@@ -133,7 +133,7 @@ export default function Home() {
             <h1 style={{ margin: 0, fontSize: '2rem', cursor: 'pointer' }} onClick={clearFilters}>
               {siteTitle}
             </h1>
-            <p style={{ margin: '5px 0 0', opacity: 0.9 }}>Khám phá kiến thức mới mỗi ngày</p>
+            <p style={{ margin: '5px 0 0', opacity: 0.9 }}>Discover new knowledge every day</p>
           </div>
         </header>
 
@@ -171,10 +171,10 @@ export default function Home() {
                 borderBottom: '2px solid #667eea',
                 paddingBottom: '10px'
               }}>
-                📚 Danh Mục
+                📚 Categories
               </h3>
               {menus.length === 0 ? (
-                <p style={{ fontSize: '0.9rem', color: '#999' }}>Đang tải...</p>
+                <p style={{ fontSize: '0.9rem', color: '#999' }}>Loading...</p>
               ) : (
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                   {menus.map((menu, idx) => (
@@ -228,7 +228,7 @@ export default function Home() {
                 borderBottom: '2px solid #764ba2',
                 paddingBottom: '10px'
               }}>
-                🏷️ Thẻ Tag
+                🏷️ Tags
               </h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {tags.map((tag, idx) => (
@@ -279,7 +279,7 @@ export default function Home() {
                 border: '1px solid #ffc107'
               }}>
                 <span>
-                  Đang lọc: <strong>{selectedMenu || selectedTag}</strong>
+                  Filtering by: <strong>{selectedMenu || selectedTag}</strong>
                 </span>
                 <button
                   onClick={clearFilters}
@@ -292,7 +292,7 @@ export default function Home() {
                     fontSize: '0.9rem'
                   }}
                 >
-                  ✕ Xóa bộ lọc
+                  ✕ Clear Filter
                 </button>
               </div>
             )}
@@ -317,7 +317,7 @@ export default function Home() {
                       color: '#999',
                       border: '2px dashed #ddd'
                     }}>
-                      📢 Vị trí quảng cáo giữa trang
+                      📢 Mid-page Advertisement Space
                     </div>
                   )}
                   
@@ -422,7 +422,7 @@ export default function Home() {
                           borderTop: '1px solid #f0f0f0'
                         }}>
                           <span>📅 {new Date(post.date).toLocaleDateString('vi-VN')}</span>
-                          <span style={{ color: '#667eea', fontWeight: 'bold' }}>Đọc thêm →</span>
+                          <span style={{ color: '#667eea', fontWeight: 'bold' }}>Read More →</span>
                         </div>
                       </div>
                     </div>
@@ -494,8 +494,8 @@ export default function Home() {
               color: 'white',
               marginTop: '30px'
             }}>
-              <h3 style={{ margin: '0 0 10px', fontSize: '1.5rem' }}>📢 Quảng cáo Banner</h3>
-              <p style={{ margin: 0, opacity: 0.9 }}>Vị trí quảng cáo cuối trang - 728x90 hoặc responsive</p>
+              <h3 style={{ margin: '0 0 10px', fontSize: '1.5rem' }}>📢 Advertisement Banner</h3>
+              <p style={{ margin: 0, opacity: 0.9 }}>Bottom banner ad space - 728x90 or responsive</p>
             </div>
           </main>
 
@@ -519,7 +519,7 @@ export default function Home() {
                 textAlign: 'center',
                 color: '#333'
               }}>
-                📢 Quảng Cáo
+                📢 Advertisement
               </h3>
               <div style={{
                 background: '#f5f5f5',

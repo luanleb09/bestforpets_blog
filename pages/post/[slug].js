@@ -65,33 +65,23 @@ export default function Post() {
     const fetchPost = async () => {
       try {
         const apiUrl = `${BASE_URL}/posts?slug=${slug}`;
-        
-        console.log('🔍 Fetching URL:', apiUrl);
-        console.log('📌 Slug từ URL:', slug);
-        
         const res = await fetch(apiUrl);
         const data = await res.json();
-        
-        console.log('📦 Full API Response:', data);
-        console.log('📝 Number of posts returned:', data.posts?.length);
         
         if (data.posts && data.posts.length > 0) {
           const matchedPost = data.posts.find(p => p.slug === slug);
           
           if (matchedPost) {
-            console.log('✅ Matched post found:', matchedPost.title);
             setPost(matchedPost);
           } else {
-            console.error('❌ No post with matching slug found');
             setIsError(true);
           }
         } else {
-          console.error('❌ No posts found in response');
           setIsError(true);
         }
       } catch (e) {
         setIsError(true);
-        console.error("❌ Lỗi khi fetch API:", e);
+        console.error("Error fetching post:", e);
       } finally {
         setIsLoading(false);
       }
