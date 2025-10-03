@@ -62,7 +62,7 @@ export default function Home() {
               >
                 <h3 style={{ marginTop: 0 }}>
                   <Link
-                    href={`/posts/${post.slug}`}
+                    href={`/post/${post.slug}`}
                     style={{ textDecoration: 'none', color: '#333' }}
                   >
                     {post.title}
