@@ -170,7 +170,7 @@ export default function Post() {
       
       return false;
     })
-    .slice(0, 6);
+    .slice(0, 12); // Tăng lên 12 bài
 
   return (
     <>
@@ -394,17 +394,23 @@ export default function Post() {
                 <h2 style={{ 
                   fontSize: '1.8rem', 
                   marginTop: 0,
-                  marginBottom: '25px',
+                  marginBottom: '20px',
                   color: '#1a202c',
                   borderBottom: '3px solid #667eea',
                   paddingBottom: '15px'
                 }}>
                   📖 Related Posts
                 </h2>
+                
+                {/* Horizontal Scroll Container */}
                 <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                  gap: '20px'
+                  display: 'flex',
+                  gap: '16px',
+                  overflowX: 'auto',
+                  overflowY: 'hidden',
+                  paddingBottom: '10px',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#667eea #f0f0f0'
                 }}>
                   {relatedPosts.map(relatedPost => (
                     <Link 
@@ -414,31 +420,35 @@ export default function Post() {
                     >
                       <div style={{
                         background: '#f8f9fa',
-                        borderRadius: '12px',
+                        borderRadius: '10px',
                         overflow: 'hidden',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
                         transition: 'transform 0.3s, box-shadow 0.3s',
                         cursor: 'pointer',
-                        height: '100%',
+                        minWidth: '220px',
+                        maxWidth: '220px',
+                        height: '280px',
                         display: 'flex',
-                        flexDirection: 'column'
+                        flexDirection: 'column',
+                        flexShrink: 0
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-8px)';
-                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(102, 126, 234, 0.25)';
+                        e.currentTarget.style.transform = 'translateY(-6px)';
+                        e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.2)';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                        e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
                       }}
                       >
                         {/* Featured Image */}
                         <div style={{ 
                           position: 'relative',
-                          paddingTop: '60%',
+                          height: '140px',
                           background: relatedPost.featured_image 
                             ? `url(${relatedPost.featured_image}) center/cover` 
-                            : '#e0e0e0'
+                            : '#e0e0e0',
+                          flexShrink: 0
                         }}>
                           {!relatedPost.featured_image && (
                             <div style={{
@@ -450,7 +460,7 @@ export default function Post() {
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              fontSize: '3rem',
+                              fontSize: '2.5rem',
                               color: '#bbb'
                             }}>
                               📄
@@ -458,17 +468,24 @@ export default function Post() {
                           )}
                         </div>
 
-                        <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ 
+                          padding: '12px', 
+                          flex: 1, 
+                          display: 'flex', 
+                          flexDirection: 'column',
+                          overflow: 'hidden'
+                        }}>
                           <h3 style={{
-                            margin: '0 0 10px',
-                            fontSize: '1.05rem',
-                            lineHeight: '1.4',
+                            margin: '0 0 8px',
+                            fontSize: '0.9rem',
+                            lineHeight: '1.3',
                             color: '#2d3748',
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
                             overflow: 'hidden',
-                            fontWeight: '600'
+                            fontWeight: '600',
+                            flex: '0 0 auto'
                           }}>
                             {relatedPost.title}
                           </h3>
@@ -476,14 +493,14 @@ export default function Post() {
                           {/* Excerpt */}
                           <div
                             style={{
-                              fontSize: '0.85rem',
+                              fontSize: '0.75rem',
                               color: '#718096',
-                              lineHeight: '1.5',
+                              lineHeight: '1.4',
                               display: '-webkit-box',
                               WebkitLineClamp: 2,
                               WebkitBoxOrient: 'vertical',
                               overflow: 'hidden',
-                              marginBottom: '12px',
+                              marginBottom: '8px',
                               flex: 1
                             }}
                             dangerouslySetInnerHTML={{ __html: relatedPost.excerpt }}
@@ -493,17 +510,19 @@ export default function Post() {
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            fontSize: '0.8rem',
+                            fontSize: '0.7rem',
                             color: '#999',
-                            paddingTop: '10px',
-                            borderTop: '1px solid #e2e8f0'
+                            paddingTop: '8px',
+                            borderTop: '1px solid #e2e8f0',
+                            flex: '0 0 auto'
                           }}>
-                            <span>📅 {new Date(relatedPost.date).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: '2-digit'
-                            })}</span>
-                            <span style={{ color: '#667eea', fontWeight: 'bold' }}>Read More →</span>
+                            <span style={{ fontSize: '0.65rem' }}>
+                              📅 {new Date(relatedPost.date).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: '2-digit'
+                              })}
+                            </span>
+                            <span style={{ color: '#667eea', fontWeight: 'bold', fontSize: '0.7rem' }}>Read →</span>
                           </div>
                         </div>
                       </div>
@@ -642,6 +661,22 @@ export default function Post() {
           border-radius: 4px;
           font-family: 'Courier New', monospace;
           font-size: 0.9em;
+        }
+
+        /* Custom Scrollbar for Related Posts */
+        div::-webkit-scrollbar {
+          height: 8px;
+        }
+        div::-webkit-scrollbar-track {
+          background: #f0f0f0;
+          border-radius: 4px;
+        }
+        div::-webkit-scrollbar-thumb {
+          background: #667eea;
+          border-radius: 4px;
+        }
+        div::-webkit-scrollbar-thumb:hover {
+          background: #5568d3;
         }
       `}</style>
     </>
