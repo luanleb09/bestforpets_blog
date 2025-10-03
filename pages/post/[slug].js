@@ -103,7 +103,7 @@ export default function Post() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⏳</div>
-          <div style={{ fontSize: '1.2rem', color: '#666' }}>Đang tải nội dung...</div>
+          <div style={{ fontSize: '1.2rem', color: '#666' }}>Loading content...</div>
         </div>
       </div>
     );
@@ -128,8 +128,8 @@ export default function Post() {
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '5rem', marginBottom: '20px' }}>😢</div>
-            <h2 style={{ color: '#e53e3e', marginBottom: '10px' }}>Không tìm thấy bài viết</h2>
-            <p style={{ color: '#666', marginBottom: '20px' }}>Bài viết bạn đang tìm không tồn tại hoặc đã bị xóa.</p>
+            <h2 style={{ color: '#e53e3e', marginBottom: '10px' }}>Post Not Found</h2>
+            <p style={{ color: '#666', marginBottom: '20px' }}>The post you are looking for does not exist or has been removed.</p>
             <Link href="/" style={{
               display: 'inline-block',
               padding: '12px 24px',
@@ -139,7 +139,7 @@ export default function Post() {
               borderRadius: '6px',
               fontWeight: 'bold'
             }}>
-              ← Quay về trang chủ
+              ← Back to Home
             </Link>
           </div>
         </div>
@@ -147,14 +147,28 @@ export default function Post() {
     );
   }
 
-  // Lấy bài viết liên quan (cùng category)
+  // Lấy bài viết liên quan (cùng category hoặc tag)
   const relatedPosts = allPosts
     .filter(p => {
       if (p.ID === post.ID) return false;
-      if (!post.categories || !p.categories) return false;
-      const postCats = Object.keys(post.categories);
-      const pCats = Object.keys(p.categories);
-      return postCats.some(cat => pCats.includes(cat));
+      
+      // Check if shares any category
+      if (post.categories && p.categories) {
+        const postCats = Object.keys(post.categories);
+        const pCats = Object.keys(p.categories);
+        const hasCommonCategory = postCats.some(cat => pCats.includes(cat));
+        if (hasCommonCategory) return true;
+      }
+      
+      // Check if shares any tag
+      if (post.tags && p.tags) {
+        const postTags = Object.keys(post.tags);
+        const pTags = Object.keys(p.tags);
+        const hasCommonTag = postTags.some(tag => pTags.includes(tag));
+        if (hasCommonTag) return true;
+      }
+      
+      return false;
     })
     .slice(0, 6);
 
@@ -176,7 +190,7 @@ export default function Post() {
           <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px' }}>
             <Link href="/" style={{ color: 'white', textDecoration: 'none' }}>
               <h1 style={{ margin: 0, fontSize: '2rem', cursor: 'pointer' }}>{siteTitle}</h1>
-              <p style={{ margin: '5px 0 0', opacity: 0.9 }}>Khám phá kiến thức mới mỗi ngày</p>
+              <p style={{ margin: '5px 0 0', opacity: 0.9 }}>Discover new knowledge every day</p>
             </Link>
           </div>
         </header>
@@ -215,7 +229,7 @@ export default function Post() {
                 borderBottom: '2px solid #667eea',
                 paddingBottom: '10px'
               }}>
-                📚 Danh Mục
+                📚 Categories
               </h3>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {menus.map((menu, idx) => (
@@ -261,7 +275,7 @@ export default function Post() {
                 borderBottom: '2px solid #764ba2',
                 paddingBottom: '10px'
               }}>
-                🏷️ Thẻ Tag
+                🏷️ Tags
               </h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {tags.map((tag, idx) => (
@@ -299,7 +313,7 @@ export default function Post() {
             {/* Breadcrumb */}
             <div style={{ marginBottom: '20px' }}>
               <Link href="/" style={{ color: '#667eea', textDecoration: 'none', fontSize: '0.9rem' }}>
-                ← Quay về trang chủ
+                ← Back to Home
               </Link>
             </div>
 
@@ -331,15 +345,11 @@ export default function Post() {
                 fontSize: '0.9rem',
                 color: '#718096'
               }}>
-                <span>📅 {new Date(post.date).toLocaleDateString('vi-VN', { 
+                <span>📅 {new Date(post.date).toLocaleDateString('en-US', { 
                   year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
+                  month: 'short', 
+                  day: '2-digit' 
                 })}</span>
-                {post.author && <span>✍️ {post.author.name}</span>}
-                {post.categories && (
-                  <span>📂 {Object.values(post.categories).map(cat => cat.name).join(', ')}</span>
-                )}
               </div>
 
               {/* Featured Image */}
@@ -369,53 +379,31 @@ export default function Post() {
                 dangerouslySetInnerHTML={{ __html: post.content }} 
               />
 
-              {/* Tags của bài viết */}
-              {post.tags && Object.keys(post.tags).length > 0 && (
-                <div style={{
-                  marginTop: '40px',
-                  paddingTop: '20px',
-                  borderTop: '2px solid #f0f0f0'
-                }}>
-                  <strong style={{ marginRight: '10px' }}>Tags:</strong>
-                  {Object.values(post.tags).map((tag, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleTagClick(tag.name)}
-                      style={{
-                        padding: '6px 16px',
-                        marginRight: '8px',
-                        marginBottom: '8px',
-                        border: 'none',
-                        borderRadius: '20px',
-                        background: '#764ba2',
-                        color: 'white',
-                        cursor: 'pointer',
-                        fontSize: '0.9rem',
-                        transition: 'all 0.3s'
-                      }}
-                      onMouseEnter={(e) => e.target.style.background = '#5a3a7a'}
-                      onMouseLeave={(e) => e.target.style.background = '#764ba2'}
-                    >
-                      {tag.name}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {/* Tags removed as requested */}
             </article>
 
             {/* Related Posts */}
             {relatedPosts.length > 0 && (
-              <div style={{ marginBottom: '30px' }}>
+              <div style={{ 
+                background: 'white',
+                borderRadius: '12px',
+                padding: '30px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                marginBottom: '30px'
+              }}>
                 <h2 style={{ 
                   fontSize: '1.8rem', 
-                  marginBottom: '20px',
-                  color: '#1a202c'
+                  marginTop: 0,
+                  marginBottom: '25px',
+                  color: '#1a202c',
+                  borderBottom: '3px solid #667eea',
+                  paddingBottom: '15px'
                 }}>
-                  📖 Bài viết liên quan
+                  📖 Related Posts
                 </h2>
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
                   gap: '20px'
                 }}>
                   {relatedPosts.map(relatedPost => (
@@ -425,47 +413,97 @@ export default function Post() {
                       style={{ textDecoration: 'none', color: 'inherit' }}
                     >
                       <div style={{
-                        background: 'white',
+                        background: '#f8f9fa',
                         borderRadius: '12px',
                         overflow: 'hidden',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                         transition: 'transform 0.3s, box-shadow 0.3s',
                         cursor: 'pointer',
-                        height: '100%'
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column'
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-5px)';
-                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+                        e.currentTarget.style.transform = 'translateY(-8px)';
+                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(102, 126, 234, 0.25)';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
                       }}
                       >
-                        {relatedPost.featured_image && (
-                          <div style={{ 
-                            paddingTop: '60%',
-                            background: `url(${relatedPost.featured_image}) center/cover`
-                          }} />
-                        )}
-                        <div style={{ padding: '16px' }}>
+                        {/* Featured Image */}
+                        <div style={{ 
+                          position: 'relative',
+                          paddingTop: '60%',
+                          background: relatedPost.featured_image 
+                            ? `url(${relatedPost.featured_image}) center/cover` 
+                            : '#e0e0e0'
+                        }}>
+                          {!relatedPost.featured_image && (
+                            <div style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              width: '100%',
+                              height: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '3rem',
+                              color: '#bbb'
+                            }}>
+                              📄
+                            </div>
+                          )}
+                        </div>
+
+                        <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                           <h3 style={{
-                            margin: 0,
-                            fontSize: '1rem',
+                            margin: '0 0 10px',
+                            fontSize: '1.05rem',
                             lineHeight: '1.4',
+                            color: '#2d3748',
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden'
+                            overflow: 'hidden',
+                            fontWeight: '600'
                           }}>
                             {relatedPost.title}
                           </h3>
+
+                          {/* Excerpt */}
+                          <div
+                            style={{
+                              fontSize: '0.85rem',
+                              color: '#718096',
+                              lineHeight: '1.5',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              marginBottom: '12px',
+                              flex: 1
+                            }}
+                            dangerouslySetInnerHTML={{ __html: relatedPost.excerpt }}
+                          />
+
                           <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
                             fontSize: '0.8rem',
                             color: '#999',
-                            marginTop: '8px'
+                            paddingTop: '10px',
+                            borderTop: '1px solid #e2e8f0'
                           }}>
-                            📅 {new Date(relatedPost.date).toLocaleDateString('vi-VN')}
+                            <span>📅 {new Date(relatedPost.date).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: '2-digit'
+                            })}</span>
+                            <span style={{ color: '#667eea', fontWeight: 'bold' }}>Read More →</span>
                           </div>
                         </div>
                       </div>
@@ -483,8 +521,8 @@ export default function Post() {
               textAlign: 'center',
               color: 'white'
             }}>
-              <h3 style={{ margin: '0 0 10px', fontSize: '1.5rem' }}>📢 Quảng cáo Banner</h3>
-              <p style={{ margin: 0, opacity: 0.9 }}>Vị trí quảng cáo cuối trang - 728x90 hoặc responsive</p>
+              <h3 style={{ margin: '0 0 10px', fontSize: '1.5rem' }}>📢 Advertisement Banner</h3>
+              <p style={{ margin: 0, opacity: 0.9 }}>Bottom banner ad space - 728x90 or responsive</p>
             </div>
           </main>
 
@@ -508,7 +546,7 @@ export default function Post() {
                 textAlign: 'center',
                 color: '#333'
               }}>
-                📢 Quảng Cáo
+                📢 Advertisement
               </h3>
               <div style={{
                 background: '#f5f5f5',
