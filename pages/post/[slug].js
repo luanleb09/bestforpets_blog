@@ -2,75 +2,100 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 
-// Biến này CÓ THỂ được đọc trên client-side vì có tiền tố NEXT_PUBLIC_
 const BASE_URL = process.env.NEXT_PUBLIC_WP_API;
 
 export default function Post() {
   const router = useRouter();
-  const { slug } = router.query; // Lấy slug từ URL
+  const { slug } = router.query;
   const [post, setPost] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
   useEffect(() => {
-    // Chỉ chạy khi slug đã có và chưa tải
-    if (slug && !post) {
-      const apiUrl = `${BASE_URL}/posts/slug:${slug}`;
-      
-      const fetchPost = async () => {
-        try {
-          const res = await fetch(apiUrl);
-          const postData = await res.json();
-          
-          if (postData.error || postData.ID === undefined) {
-            setIsError(true); // Đặt trạng thái lỗi nếu API không tìm thấy
-          } else {
-            setPost(postData);
-          }
-        } catch (e) {
+    if (!slug) return;
+
+    const fetchPost = async () => {
+      try {
+        // FIX: Đổi từ /posts/slug:${slug} thành /posts?slug=${slug}
+        const apiUrl = `${BASE_URL}/posts?slug=${slug}`;
+        
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+        
+        // Jetpack API trả về array, lấy phần tử đầu tiên
+        if (data.posts && data.posts.length > 0) {
+          setPost(data.posts[0]);
+        } else {
           setIsError(true);
-          console.error("Lỗi khi fetch API trên client:", e);
-        } finally {
-          setIsLoading(false);
         }
-      };
+      } catch (e) {
+        setIsError(true);
+        console.error("Lỗi khi fetch API:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-      fetchPost();
-    }
-  }, [slug, post]);
-
-  // --- Trạng thái hiển thị ---
+    fetchPost();
+  }, [slug]);
 
   if (isLoading || router.isFallback) {
-    return <div className="text-center mt-10">Đang tải nội dung...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl">Đang tải nội dung...</div>
+      </div>
+    );
   }
 
   if (isError || !post) {
-    // Lưu ý: Nếu post rỗng, URL API WordPress sẽ được thấy trong Network tab của trình duyệt!
-    return <div className="text-center mt-10 text-red-600">Lỗi: Không tìm thấy bài viết hoặc không thể tải dữ liệu.</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl text-red-600">
+          Lỗi: Không tìm thấy bài viết hoặc không thể tải dữ liệu.
+        </div>
+      </div>
+    );
   }
-  
-  // --- Hiển thị nội dung ---
 
   return (
     <div className="container mx-auto px-4 py-8">
       <Head>
         <title>{post.title} | Blog</title>
+        <meta name="description" content={post.excerpt?.substring(0, 160)} />
       </Head>
-
+      
       <article className="max-w-3xl mx-auto">
+        {/* Nút quay lại */}
+        <button 
+          onClick={() => router.push('/')}
+          className="mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2"
+        >
+          ← Quay lại trang chủ
+        </button>
+
         <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
         
-        {/* NỘI DUNG SẼ ĐƯỢC RENDER SAU KHI TẢI DỮ LIỆU */}
+        {/* Thông tin meta */}
+        <div className="text-gray-600 mb-6 flex gap-4">
+          <span>📅 {new Date(post.date).toLocaleDateString('vi-VN')}</span>
+          {post.author && <span>✍️ {post.author.name}</span>}
+        </div>
+
+        {/* Featured Image */}
+        {post.featured_image && (
+          <img 
+            src={post.featured_image} 
+            alt={post.title}
+            className="w-full h-auto rounded-lg mb-6"
+          />
+        )}
+
+        {/* Nội dung bài viết */}
         <div 
-          className="prose max-w-none"
+          className="prose prose-lg max-w-none"
           dangerouslySetInnerHTML={{ __html: post.content }} 
         />
-        
       </article>
     </div>
   );
 }
-
-// KHÔNG CÓ getStaticProps HOẶC getStaticPaths
-// Trang này hoàn toàn là Client-Side Rendering
