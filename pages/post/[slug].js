@@ -33,13 +33,21 @@ export default function Post() {
         console.log('📝 Number of posts returned:', data.posts?.length);
         
         if (data.posts && data.posts.length > 0) {
-          console.log('✅ Post found:');
-          console.log('  - ID:', data.posts[0].ID);
-          console.log('  - Title:', data.posts[0].title);
-          console.log('  - Slug:', data.posts[0].slug);
-          console.log('  - Does slug match?', data.posts[0].slug === slug);
+          // FIX: Tìm bài viết có slug khớp chính xác thay vì lấy phần tử đầu tiên
+          const matchedPost = data.posts.find(p => p.slug === slug);
           
-          setPost(data.posts[0]);
+          if (matchedPost) {
+            console.log('✅ Matched post found:');
+            console.log('  - ID:', matchedPost.ID);
+            console.log('  - Title:', matchedPost.title);
+            console.log('  - Slug:', matchedPost.slug);
+            
+            setPost(matchedPost);
+          } else {
+            console.error('❌ No post with matching slug found');
+            console.log('Available slugs:', data.posts.map(p => p.slug));
+            setIsError(true);
+          }
         } else {
           console.error('❌ No posts found in response');
           setIsError(true);
