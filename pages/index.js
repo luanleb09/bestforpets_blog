@@ -6,6 +6,7 @@ import { useRouter } from 'next/router'
 
 export default function Home() {
   const router = useRouter()
+  const { menu: queryMenu, tag: queryTag } = router.query
   const [siteTitle, setSiteTitle] = useState('My Blog')
   const [posts, setPosts] = useState([])
   const [filteredPosts, setFilteredPosts] = useState([])
@@ -15,6 +16,12 @@ export default function Home() {
   const [selectedTag, setSelectedTag] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
   const postsPerPage = 12
+
+  // Set filter từ URL query
+  useEffect(() => {
+    if (queryMenu) setSelectedMenu(decodeURIComponent(queryMenu))
+    if (queryTag) setSelectedTag(decodeURIComponent(queryTag))
+  }, [queryMenu, queryTag])
 
   useEffect(() => {
     const apiBase = process.env.NEXT_PUBLIC_WP_API
