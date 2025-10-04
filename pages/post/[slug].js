@@ -56,12 +56,15 @@ export default function Post() {
       })
       .catch(err => console.error('Error fetching posts:', err));
 
-    // TODO: Fetch ad content from your ad server/API
-    // Example: fetch('/api/ads').then(res => res.json()).then(data => {
-    //   setAdContent(data.inContentAd);
-    //   setSidebarAd(data.sidebarAd);
-    //   setBannerAd(data.bannerAd);
-    // });
+    // Fetch ad content from API
+    fetch('/api/ads')
+      .then(res => res.json())
+      .then(data => {
+        setAdContent(data.inContentAd);
+        setSidebarAd(data.sidebarAd);
+        setBannerAd(data.bannerAd);
+      })
+      .catch(err => console.error('Error fetching ads:', err));
   }, []);
 
   // Fetch current post
