@@ -15,12 +15,15 @@ export default function Post() {
   const [siteTitle, setSiteTitle] = useState('My Blog');
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  const [adContent, setAdContent] = useState(null); // For in-content ad
+  const [sidebarAd, setSidebarAd] = useState(null); // For sidebar ad
+  const [bannerAd, setBannerAd] = useState(null); // For banner ad
 
-  // Fetch site info và all posts cho sidebar
+  // Fetch site info and all posts for sidebar
   useEffect(() => {
     if (!BASE_URL) return;
 
-    // Lấy thông tin site
+    // Fetch site info
     fetch(BASE_URL)
       .then(res => res.json())
       .then(data => {
@@ -28,14 +31,14 @@ export default function Post() {
       })
       .catch(err => console.error('Error fetching site info:', err));
 
-    // Lấy tất cả bài viết cho sidebar
+    // Fetch all posts for sidebar
     fetch(`${BASE_URL}/posts/?number=50`)
       .then(res => res.json())
       .then(data => {
         const postList = Array.isArray(data.posts) ? data.posts : [];
         setAllPosts(postList);
 
-        // Tạo menu và tags
+        // Create menus and tags
         const menuSet = new Set();
         const tagSet = new Set();
 
@@ -52,9 +55,16 @@ export default function Post() {
         setTags(Array.from(tagSet));
       })
       .catch(err => console.error('Error fetching posts:', err));
+
+    // TODO: Fetch ad content from your ad server/API
+    // Example: fetch('/api/ads').then(res => res.json()).then(data => {
+    //   setAdContent(data.inContentAd);
+    //   setSidebarAd(data.sidebarAd);
+    //   setBannerAd(data.bannerAd);
+    // });
   }, []);
 
-  // Fetch bài viết hiện tại
+  // Fetch current post
   useEffect(() => {
     if (!slug) return;
 
@@ -96,6 +106,26 @@ export default function Post() {
 
   const handleTagClick = (tag) => {
     router.push(`/?tag=${encodeURIComponent(tag)}`);
+  };
+
+  // Function to insert ad into post content
+  const insertAdIntoContent = (content, adHtml) => {
+    if (!adHtml) return content;
+    
+    // Wrap ad in styled container
+    const wrappedAd = `<div class="in-content-ad">${adHtml}</div>`;
+    
+    // Split content by paragraphs
+    const paragraphs = content.split('</p>');
+    
+    // Insert ad after 3rd paragraph (or middle if less than 6 paragraphs)
+    const insertPosition = Math.min(3, Math.floor(paragraphs.length / 2));
+    
+    if (paragraphs.length > insertPosition) {
+      paragraphs.splice(insertPosition, 0, wrappedAd);
+    }
+    
+    return paragraphs.join('</p>');
   };
 
   if (isLoading || router.isFallback) {
@@ -147,7 +177,7 @@ export default function Post() {
     );
   }
 
-  // Lấy bài viết liên quan (cùng category hoặc tag)
+  // Get related posts (same category or tag)
   const relatedPosts = allPosts
     .filter(p => {
       if (p.ID === post.ID) return false;
@@ -170,7 +200,7 @@ export default function Post() {
       
       return false;
     })
-    .slice(0, 12); // Tăng lên 12 bài
+    .slice(0, 12); // Increase to 12 posts
 
   return (
     <>
@@ -376,7 +406,11 @@ export default function Post() {
                   lineHeight: '1.8',
                   color: '#2d3748'
                 }}
-                dangerouslySetInnerHTML={{ __html: post.content }} 
+                dangerouslySetInnerHTML={{ 
+                  __html: adContent 
+                    ? insertAdIntoContent(post.content, adContent) 
+                    : post.content 
+                }} 
               />
 
               {/* Tags removed as requested */}
@@ -550,45 +584,28 @@ export default function Post() {
             width: '20%', 
             minWidth: '200px' 
           }}>
-            <div style={{
-              background: 'white',
-              borderRadius: '12px',
-              padding: '20px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              position: 'sticky',
-              top: '20px'
-            }}>
-              <h3 style={{ 
-                marginTop: 0, 
-                marginBottom: '15px',
-                fontSize: '1.1rem',
-                textAlign: 'center',
-                color: '#333'
-              }}>
-                📢 Advertisement
-              </h3>
+            {/* Only show sidebar ad if it exists */}
+            {sidebarAd && (
               <div style={{
-                background: '#f5f5f5',
-                padding: '40px 20px',
-                borderRadius: '8px',
-                textAlign: 'center',
-                color: '#999',
-                border: '2px dashed #ddd',
-                marginBottom: '20px'
+                background: 'white',
+                borderRadius: '12px',
+                padding: '20px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                position: 'sticky',
+                top: '20px'
               }}>
-                300x250
+                <h3 style={{ 
+                  marginTop: 0, 
+                  marginBottom: '15px',
+                  fontSize: '1.1rem',
+                  textAlign: 'center',
+                  color: '#333'
+                }}>
+                  📢 Advertisement
+                </h3>
+                <div dangerouslySetInnerHTML={{ __html: sidebarAd }} />
               </div>
-              <div style={{
-                background: '#f5f5f5',
-                padding: '40px 20px',
-                borderRadius: '8px',
-                textAlign: 'center',
-                color: '#999',
-                border: '2px dashed #ddd'
-              }}>
-                300x600
-              </div>
-            </div>
+            )}
           </aside>
         </div>
 
@@ -661,6 +678,16 @@ export default function Post() {
           border-radius: 4px;
           font-family: 'Courier New', monospace;
           font-size: 0.9em;
+        }
+
+        /* Ad container styling */
+        .in-content-ad {
+          margin: 30px 0;
+          padding: 20px;
+          background: #f8f9fa;
+          border-radius: 12px;
+          text-align: center;
+          border: 1px solid #e2e8f0;
         }
 
         /* Custom Scrollbar for Related Posts */
